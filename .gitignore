@@ -1,3 +1,4 @@
+keys/**
 terraform/openrc.sh
 **/.terraform
 **/terraform.tfstate

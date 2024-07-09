@@ -18,7 +18,7 @@ resource "openstack_networking_network_v2" "dcn_network" {
 #creating the virtual subnet
 resource "openstack_networking_subnet_v2" "dcn_subnet1" {
   name = "dcn_subnet1"
-  network_id  = "${openstack_networking_network_v2.dcn_network.id}"
+  network_id  = openstack_networking_network_v2.dcn_network.id
   cidr  = "192.168.120.0/24"
   ip_version  = 4
   tags = ["terraform","dcn"]
@@ -35,6 +35,6 @@ resource "openstack_networking_router_v2" "dcn_router" {
 
 # connect the routern to our dcn subnet
 resource "openstack_networking_router_interface_v2" "dcn_router_interface_1" {
-  router_id = "${openstack_networking_router_v2.dcn_router.id}"
-  subnet_id = "${openstack_networking_subnet_v2.dcn_subnet1.id}"
+  router_id = openstack_networking_router_v2.dcn_router.id
+  subnet_id = openstack_networking_subnet_v2.dcn_subnet1.id
 }
