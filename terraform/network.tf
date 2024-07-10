@@ -28,9 +28,8 @@ resource "openstack_networking_subnet_v2" "dcn_subnet1" {
 resource "openstack_networking_router_v2" "dcn_router" {
   name = "dcn_router"
   admin_state_up  = true
-  # id of public network at JS1/2
   external_network_id = data.openstack_networking_network_v2.public.id
-  tags = ["terraform"]
+  tags = ["terraform", "dcn"]
 }
 
 # connect the routern to our dcn subnet
