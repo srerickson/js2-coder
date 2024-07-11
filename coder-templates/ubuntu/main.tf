@@ -12,6 +12,11 @@ terraform {
 
 provider "openstack" {}
 
+locals {
+  network_name = "dcn_network"
+  coder_server_hostname = "coder-server"
+}
+
 
 data "coder_parameter" "instance_type" {
   name         = "instance_type"
@@ -60,8 +65,9 @@ data "coder_parameter" "instance_image" {
   }
 }
 
+
 data "openstack_networking_network_v2" "terraform" {
-  name = "dcn_network"
+  name = local.network_name
 }
 
 locals {
@@ -96,6 +102,26 @@ locals {
   # packages we need
   apt-get update
   apt-get install -y jq
+
+  # Jetstream2 Networking issue:
+  # instances *without* public/floating IPs can't reach instances 
+  # *with* public/floating IPs using the latter's public/floating IP.
+  # See https://docs.jetstream-cloud.org/faq/trouble/#i-cant-ping-or-reach-a-publicfloating-ip-from-an-internal-non-routed-host
+  # To address this, we need to create an entry in /etc/hosts for
+  # for the Coder server's access url that uses the private IP adress.
+
+  # trim https:// from the access url value
+  coder_host=$(echo "${lower(data.coder_workspace.env.access_url)}" | sed 's/.*\/\///')
+  
+  # ip address for coder server
+  coder_ipv4=$(getent hosts ${local.coder_server_hostname} | awk '{ print $1 }')
+
+  # add coder_host to /etc/hosts
+  if [ -n "$coder_host" ] && [ -n "$coder_ipv4" ]; then
+    grep -v "$coder_host" /etc/hosts > /etc/hosts.tmp
+    echo "$coder_ipv4 $coder_host" >> /etc/hosts.tmp
+    mv /etc/hosts.tmp /etc/hosts
+  fi
 
   # Install Docker
   if ! command -v docker &> /dev/null
