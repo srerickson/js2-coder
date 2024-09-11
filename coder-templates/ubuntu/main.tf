@@ -49,20 +49,17 @@ data "coder_parameter" "instance_image" {
   name         = "instance_image"
   display_name = "Operating System"
   description  = "Choose an operating system for the instance."
-  default      = "f2da1d3b-95bf-471a-b8eb-f1e942d3686a"
+  default      = "2b7cfcd8-04a7-4b1b-99ea-6a1e34e543e4"
   mutable      = false
   option {
-    name  = "Ubuntu Linux 22.04 (Featured)"
-    value = "f2da1d3b-95bf-471a-b8eb-f1e942d3686a"
+    name  = "Ubuntu 24 (Featured, Minimal)"
+    value = "2b7cfcd8-04a7-4b1b-99ea-6a1e34e543e4"
   }
-  option {
-    name  = "Ubuntu Linux 24.04 LTS"
-    value = "b9d0deb4-4fc5-447d-a11b-24652feb5ef7"
+   option {
+    name  = "Ubuntu 24 (Preview)"
+    value = "d9fd3307-6bf2-4da4-8e1b-2a5404c3b61a"
   }
-  option {
-    name = "Rocky Linux (Featured)"
-    value = "db525878-8a4d-455d-bbd2-3542e2eff676"
-  }
+ 
 }
 
 
@@ -147,6 +144,8 @@ locals {
 data "coder_workspace" "env" {}
 data "coder_workspace_owner" "me" {}
 
+resource "openstack_identity_ec2_credential_v3" "ec2_key1" {}
+
 resource "coder_agent" "dev" {
   count          = data.coder_workspace.env.start_count
   arch           = "amd64"
@@ -158,6 +157,12 @@ resource "coder_agent" "dev" {
     curl -fsSL https://code-server.dev/install.sh | sh -s -- --method=standalone --prefix=/tmp/code-server --version 4.11.0
     /tmp/code-server/bin/code-server --auth none --port 13337 >/tmp/code-server.log 2>&1 &
   EOT
+
+  env = {
+    AWS_ENDPOINT_URL = "https://js2.jetstream-cloud.org:8001"
+    AWS_SECRET_ACCESS_KEY = "${openstack_identity_ec2_credential_v3.ec2_key1.secret}"
+    AWS_ACCESS_ID = "${openstack_identity_ec2_credential_v3.ec2_key1.access}"
+  }
 
   metadata {
     key          = "cpu"
