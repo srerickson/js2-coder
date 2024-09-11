@@ -161,7 +161,7 @@ resource "coder_agent" "dev" {
   env = {
     AWS_ENDPOINT_URL = "https://js2.jetstream-cloud.org:8001"
     AWS_SECRET_ACCESS_KEY = "${openstack_identity_ec2_credential_v3.ec2_key1.secret}"
-    AWS_ACCESS_ID = "${openstack_identity_ec2_credential_v3.ec2_key1.access}"
+    AWS_ACCESS_KEY_ID = "${openstack_identity_ec2_credential_v3.ec2_key1.access}"
   }
 
   metadata {
