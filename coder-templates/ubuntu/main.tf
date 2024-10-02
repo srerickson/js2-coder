@@ -24,24 +24,16 @@ data "coder_parameter" "instance_type" {
   description  = "What size instance for your workspace?"
   default      = 3
   option {
-    name  = "m3.tiny (1 CPU, 3GB ram, 20GB disk)"
-    value = 1
-  }
-  option {
-    name  = "m3.small (2 CPUs, 6GB ram, 20GB disk"
+    name  = "small (2 CPUs, 6GB memory)"
     value = 2
   }
   option {
-    name  = "m3.quad (4 CPUs, 15GB ram, 20GB disk)"
+    name  = "medium (4 CPUs, 15GB memory)"
     value = 3
   }
   option {
-    name  = "m3.medium (8 CPUs, 30GB ram, 60GB disk)"
+    name  = "large (8 CPUs, 30GB memory)"
     value = 4
-  }
-  option {
-    name  = "m3.large (16 CPUs, 60GB ram, 60GB disk)"
-    value = 5
   }
 }
 
@@ -157,6 +149,7 @@ resource "coder_agent" "dev" {
     AWS_ENDPOINT_URL = "https://js2.jetstream-cloud.org:8001"
     AWS_SECRET_ACCESS_KEY = "${openstack_identity_ec2_credential_v3.ec2_key1.secret}"
     AWS_ACCESS_KEY_ID = "${openstack_identity_ec2_credential_v3.ec2_key1.access}"
+    AWS_REGION = "IU" # not really used (aws client needs it to be set)
     OCFL_ROOT = "s3://dcn_data/shared"
     OCFL_USER_NAME = "${data.coder_workspace_owner.me.full_name}"
     OCFL_USER_EMAIL = "${data.coder_workspace_owner.me.email}"
@@ -207,7 +200,6 @@ resource "coder_app" "code-server" {
 # creating Ubuntu22 instance
 resource "openstack_compute_instance_v2" "vm" {
   name ="coder-${data.coder_workspace_owner.me.name}-${data.coder_workspace.env.name}"
-  image_id  = data.coder_parameter.instance_image.value
   flavor_id = data.coder_parameter.instance_type.value
   key_pair = "dcn_coder_keypair" // FIXME
   security_groups   = ["default"]
@@ -215,6 +207,14 @@ resource "openstack_compute_instance_v2" "vm" {
     coder_agent_token = try(coder_agent.dev[0].token, "")
   }
   user_data = local.user_data
+  block_device {
+    uuid                  = data.coder_parameter.instance_image.value
+    source_type           = "image"
+    volume_size           = 80
+    boot_index            = 0
+    destination_type      = "volume"
+    delete_on_termination = true
+  }
   network {
     name = data.openstack_networking_network_v2.terraform.name
   }
