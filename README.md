@@ -3,21 +3,30 @@
 Can we use the NSF-funded research computing cloud infrastructure, Jetstream2, 
 as a platform for data curation? Let's find out.
 
-This includes terraform code and __ for provisioning infrastructure 
+This repo includes terraform code and __ for provisioning infrastructure 
 on jetstream2. This includes:
 
 - A private network with routing to the internet
 - A storage pool 
 
-## terraform
+## Terraform/Tofu
 
 ```sh
 cd terraform
 source openrc.sh && tofu apply
+
+# get the new OpenStack credential used by coder in config below:
+tofu output coder_credential_secret
+tofu output coder_credential_id
 ```
 
-## certs
 
+## Coder Server Config
+
+
+### TLS Installation on Coder Server
+
+Follow steps here: https://docs.docker.com/engine/install/ubuntu/
 configure dns-multi plugin:
 
 ```ini
@@ -43,11 +52,50 @@ docker run --rm -it \
  -n --agree-tos -m serickson@ucsb.edu
 ```
 
+Copy certs to `/etc/coder.d`:
+
+```sh
+mkdir /etc/coder.d
+cp /etc/letsencrypt/live/coder.oth240004.projects.jetstream-cloud.org/fullchain.pem /etc/coder.d/
+cp /etc/letsencrypt/live/coder.oth240004.projects.jetstream-cloud.org/privkey.pem   /etc/coder.d/
+```
+
+### Coder config and install
+
+Config is in `/etc/coder.d/coder.env`:
+
+```ini
+CODER_ACCESS_URL=https://coder.oth240004.projects.jetstream-cloud.org
+CODER_WILDCARD_ACCESS_URL=*.coder.oth240004.projects.jetstream-cloud.org
+CODER_TLS_ADDRESS=0.0.0.0:443
+CODER_HTTP_ADDRESS=0.0.0.0:80
+CODER_REDIRECT_TO_ACCESS_URL=true
+CODER_TLS_ENABLE=true
+CODER_TLS_CERT_FILE=/etc/coder.d/fullchain.pem
+CODER_TLS_KEY_FILE=/etc/coder.d/privkey.pem
+
+# openstack config
+OS_AUTH_TYPE=v3applicationcredential
+OS_AUTH_URL=https://js2.jetstream-cloud.org:5000/v3/
+OS_IDENTITY_API_VERSION=3
+OS_REGION_NAME="IU"
+OS_INTERFACE=public
+OS_APPLICATION_CREDENTIAL_ID=FIXME
+OS_APPLICATION_CREDENTIAL_SECRET=FIXME
+```
+
+Install coder:
+
+```sh
+curl -L https://coder.com/install.sh | sh
+sudo chown coder:coder /etc/coder.d/*
+sudo systemctl enable --now coder
+```
+
+Go to `https://coder.oth240004.projects.jetstream-cloud.org` and create admin account.
+
 ## Reference:
 
 Another project using terraform on jetstream2:
 
 https://gitlab.com/stack0/cacao-tf-jupyterhub
-
-
-ß

@@ -13,8 +13,8 @@ resource "openstack_compute_keypair_v2" "dcn_coder" {
 
 resource "openstack_compute_instance_v2" "dcn_coder" {
   name            = "coder-server"
-  # Featured-RockyLinux9 
-  image_id        = "db525878-8a4d-455d-bbd2-3542e2eff676"
+  # Ubuntu 24.04 LTS
+  image_id        = "b9d0deb4-4fc5-447d-a11b-24652feb5ef7"
   flavor_id       = "2"
   key_pair        = resource.openstack_compute_keypair_v2.dcn_coder.name
   security_groups = ["default", openstack_networking_secgroup_v2.dcn_coder.name]
@@ -75,4 +75,8 @@ resource "openstack_networking_secgroup_rule_v2" "icmp" {
   port_range_max    = 0
   remote_ip_prefix  = "0.0.0.0/0"
   security_group_id = openstack_networking_secgroup_v2.dcn_coder.id
+}
+
+resource "openstack_identity_application_credential_v3" "coder" {
+  name        = "coder"
 }

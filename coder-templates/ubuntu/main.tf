@@ -5,7 +5,7 @@ terraform {
     }
     openstack = {
       source  = "terraform-provider-openstack/openstack"
-      version = "~> 2.0.0"
+      version = "~> 3.0.0"
     }
   }
 }
@@ -49,17 +49,12 @@ data "coder_parameter" "instance_image" {
   name         = "instance_image"
   display_name = "Operating System"
   description  = "Choose an operating system for the instance."
-  default      = "2b7cfcd8-04a7-4b1b-99ea-6a1e34e543e4"
+  default      = "b9d0deb4-4fc5-447d-a11b-24652feb5ef7"
   mutable      = false
   option {
-    name  = "Ubuntu 24 (Featured, Minimal)"
-    value = "2b7cfcd8-04a7-4b1b-99ea-6a1e34e543e4"
-  }
-   option {
-    name  = "Ubuntu 24 (Preview)"
-    value = "d9fd3307-6bf2-4da4-8e1b-2a5404c3b61a"
-  }
- 
+    name  = "Ubuntu 24.04 LTS"
+    value = "b9d0deb4-4fc5-447d-a11b-24652feb5ef7"
+  } 
 }
 
 
@@ -162,6 +157,10 @@ resource "coder_agent" "dev" {
     AWS_ENDPOINT_URL = "https://js2.jetstream-cloud.org:8001"
     AWS_SECRET_ACCESS_KEY = "${openstack_identity_ec2_credential_v3.ec2_key1.secret}"
     AWS_ACCESS_KEY_ID = "${openstack_identity_ec2_credential_v3.ec2_key1.access}"
+    OCFL_ROOT = "s3://dcn_data/shared"
+    OCFL_USER_NAME = "${data.coder_workspace_owner.me.full_name}"
+    OCFL_USER_EMAIL = "${data.coder_workspace_owner.me.email}"
+    OCFL_S3_PATHSTYLE = "true"
   }
 
   metadata {
