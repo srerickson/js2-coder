@@ -118,6 +118,13 @@ locals {
     echo "Docker is already installed."
   fi
   
+  # Install ocfl tools
+  if ! command -v ocfl &> /dev/null
+  then
+    ocfl_tools=https://github.com/srerickson/ocfl-tools/releases/download/v0.1.1/ocfl-tools_Linux_x86_64.tar.gz
+    curl -fsSL "$ocfl_tools" -o ocfl.tar.gz && tar -C /usr/local/bin -xzf ocfl.tar.gz && rm ocfl.tar.gz
+  fi
+
   # Grabs token via the internal metadata server. This IP address is the same for all instances, no need to change it
   # https://docs.openstack.org/nova/rocky/user/metadata-service.html
   export CODER_AGENT_TOKEN=$(curl -s http://169.254.169.254/openstack/latest/meta_data.json | jq -r .meta.coder_agent_token)
