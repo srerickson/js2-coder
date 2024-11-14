@@ -1,16 +1,22 @@
-# Using Jetstream2 for Data Curation
+# Experiment: Using Jetstream2 for Data Curation
 
-Can we use the NSF-funded research computing cloud infrastructure, Jetstream2, 
-as a platform for data curation? Let's find out.
+Can I use Jetstream2 as a platform for data curation? Let's find out.
 
-This repo includes terraform code and __ for provisioning infrastructure 
-on jetstream2. This includes:
+This repo includes terraform code and __ for provisioning a coder server on jetstream2. This includes:
 
 - A private network with routing to the internet
-- A storage pool 
+- A storage?
 
-## Terraform/Tofu
+## Credential
 
+This assumes a file called `openrc.sh` with your OpenStack credentials for accessing Jetstream2.
+
+## Terraform/OpenTofu
+
+- Configure the `js2_project` variable in `variables.tf`
+- You may need to adjust `image_id` for coder vm in `coder.tf`
+- generate an ssh key and put the public key in `keys/coder.pub`
+- 
 ```sh
 cd terraform
 source openrc.sh && tofu apply
@@ -20,9 +26,9 @@ tofu output coder_credential_secret
 tofu output coder_credential_id
 ```
 
-
 ## Coder Server Config
 
+... 
 
 ### TLS Installation on Coder Server
 
