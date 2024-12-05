@@ -1,39 +1,32 @@
-################
-# Networking Config
-################
-
-
 # getting public network id for routing
 data "openstack_networking_network_v2" "public" {
   name = "public"
 }
 
 #create a virtual network for this project
-resource "openstack_networking_network_v2" "dcn_network" {
-  name = "dcn_network"
+resource "openstack_networking_network_v2" "net" {
+  name = "mytest-net"
   admin_state_up  = "true"
-  tags = ["terraform", "dcn"]
+  tags = var.tags
 }
 
 #creating the virtual subnet
-resource "openstack_networking_subnet_v2" "dcn_subnet1" {
-  name = "dcn_subnet1"
-  network_id  = openstack_networking_network_v2.dcn_network.id
+resource "openstack_networking_subnet_v2" "subnet" {
+  name = "$mytest-subnet"
+  network_id  = openstack_networking_network_v2.net.id
   cidr  = "192.168.120.0/24"
   ip_version  = 4
-  tags = ["terraform","dcn"]
 }
 
-# setting up virtual router for accessing the public network
-resource "openstack_networking_router_v2" "dcn_router" {
-  name = "dcn_router"
+# router for accessing the public network
+resource "openstack_networking_router_v2" "router" {
+  name = "mytest-router"
   admin_state_up  = true
   external_network_id = data.openstack_networking_network_v2.public.id
-  tags = ["terraform", "dcn"]
+  tags = var.tags
 }
 
-# connect the routern to our dcn subnet
-resource "openstack_networking_router_interface_v2" "dcn_router_interface_1" {
-  router_id = openstack_networking_router_v2.dcn_router.id
-  subnet_id = openstack_networking_subnet_v2.dcn_subnet1.id
+resource "openstack_networking_router_interface_v2" "router_interface" {
+  router_id = openstack_networking_router_v2.router.id
+  subnet_id = openstack_networking_subnet_v2.subnet.id
 }

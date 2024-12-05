@@ -1,0 +1,87 @@
+variant: fcos
+version: 1.4.0
+systemd:
+  units:
+    - name: podman.socket
+      enabled: true
+storage:
+  filesystems:
+    - device: /dev/nvme1n1
+      path: /var/lib/containers/storage/volumes
+      format: xfs
+      with_mount_unit: true
+  trees:
+    - local: etc
+      path: /etc
+  files:
+    - path: /etc/containers/systemd/coder.container
+      contents:
+        inline: |
+          [Unit]
+          Description=Coder Container
+          After=network-online.target
+          Wants=network-online.target
+
+          [Container]
+          ContainerName=coder
+          Image=ghcr.io/coder/coder:latest
+          PublishPort=3000
+          Volume=coder-home:/home
+          Volume=/etc/coder/lsit-kubeconfig.yaml:/etc/coder/lsit-kubeconfig.yaml
+          EnvironmentFile=/etc/coder/coder.env
+          Label=traefik.enable="true"
+          Label=traefik.http.routers.coder-secure.entrypoints="websecure"
+          Label=traefik.http.routers.coder-secure.rule='HostRegexp(`^(.+\\.)?{{ .Hostname }}\\.{{ domainEscape .Domain }}$`)'
+          Label=traefik.http.routers.coder-secure.tls="true"
+          Label=traefik.http.routers.coder-secure.tls.certresolver="dnsresolver"
+          Label=traefik.http.routers.coder-secure.tls.domains[0].main="{{ .Hostname }}.{{ .Domain }}"
+          Label=traefik.http.routers.coder-secure.tls.domains[1].main="*.{{ .Hostname }}.{{ .Domain }}"
+          
+          [Install]
+          WantedBy=multi-user.target
+    
+    - path: /etc/coder/coder.env
+      contents:
+        inline: |
+          CODER_HTTP_ADDRESS=0.0.0.0:3000
+          CODER_ACCESS_URL=https://{{ .Hostname }}.{{ .Domain }}
+          CODER_WILDCARD_ACCESS_URL=*.{{ .Hostname }}.{{ .Domain }}
+          CODER_OIDC_ISSUER_URL=https://accounts.google.com
+          CODER_OIDC_EMAIL_DOMAIN=ucsb.edu
+          CODER_OIDC_CLIENT_ID={{ .OIDCClientID }}
+          CODER_OIDC_CLIENT_SECRET={{ .OIDCClientSecret }}
+          CODER_OIDC_ALLOW_SIGNUPS=false
+          # Jetstream2/OpenStack Credentials
+          OS_AUTH_TYPE=v3applicationcredential
+          OS_AUTH_URL=https://js2.jetstream-cloud.org:5000/v3/
+          OS_IDENTITY_API_VERSION=3
+          OS_REGION_NAME=IU
+          OS_INTERFACE=public
+          OS_APPLICATION_CREDENTIAL_ID={{ .Jetstream2CredentialID }}
+          OS_APPLICATION_CREDENTIAL_SECRET={{ .Jetstream2CredentialSecret }}
+    
+    - path: /etc/coder/lsit-kubeconfig.yaml
+      contents:
+        inline: |
+          apiVersion: v1
+          kind: Config
+          clusters:
+          - name: "compute-lsit"
+            cluster:
+              server: "{{ .LSITClusterServer }}"
+          users:
+          - name: "compute-lsit"
+            user:
+              token: "{{ .LSITClusterToken }}"
+          contexts:
+          - name: "compute-lsit"
+            context:
+              user: "compute-lsit"
+              cluster: "compute-lsit"
+          current-context: "compute-lsit"
+
+    - path: /etc/containers/systemd/coder-home.volume
+      contents:
+        inline: |
+          [Volume]
+          VolumeName=coder-home
