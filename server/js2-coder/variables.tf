@@ -15,8 +15,8 @@ variable "network_name" {
     type = string
 }
 
-variable "js2_project" {
-    description = "your assigned js2 project id"
+variable "js2_allocation" {
+    description = "your jetstream2 allocation ID (e.g., bio123456)"
     type = string
 }
 

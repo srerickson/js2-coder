@@ -15,7 +15,7 @@ variable "email" {
     default = "serickson@ucsb.edu"
 }
 
-variable "js2_project" {
+variable "js2_allocation" {
     type = string
     default = "oth240004"
 }
@@ -88,7 +88,7 @@ module "js2-coder1" {
   source = "./js2-coder"
   
   # settings
-  js2_project   = var.js2_project
+  js2_allocation   = var.js2_allocation
   hostname      = "coder"
   public_key    = var.ssh_public_key
   fcos_image_id = openstack_images_image_v2.fcos.id

@@ -1,5 +1,5 @@
 locals {
-  server_fqdn = "${var.hostname}.${var.js2_project}.projects.jetstream-cloud.org"
+  server_fqdn = "${var.hostname}.${var.js2_allocation}.projects.jetstream-cloud.org"
 }
 
 resource "openstack_compute_instance_v2" "coder" {
@@ -121,7 +121,7 @@ resource "openstack_compute_keypair_v2" "coder" {
 ###############################
 
 data "openstack_dns_zone_v2" "js2_zone" {
-    name = "${var.js2_project}.projects.jetstream-cloud.org."
+    name = "${var.js2_allocation}.projects.jetstream-cloud.org."
 }
 
 resource "openstack_dns_recordset_v2" "coder" {

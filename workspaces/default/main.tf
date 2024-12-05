@@ -12,60 +12,60 @@ terraform {
 
 provider "openstack" {}
 
-data "coder_parameter" "instance_type" {
-  name         = "instance_type"
-  display_name = "Instance Type"
-  description  = "What size instance for your workspace?"
-  default      = "m3.small"
-  option {
-    name  = "m3.small (2 CPUs, 6GB mem)"
-    value = "m3.small"
-  }
-  option {
-    name  = "m3.quad (4 CPUs, 15GB mem)"
-    value = "m3.quad"
-  }
-  option {
-    name  = "m3.medium (8 CPUs, 30GB mem)"
-    value = "m3.medium"
-  }
-  option {
-    name  = "m3.large (16 CPUs, 60GB mem)"
-    value = "m3.large"
-  }
-  option {
-    name  = "m3.xl (32 CPUs, 125GB mem)"
-    value = "m3.xl"
-  }
-  option {
-    name  = "g3.medium (8 CPUs, 30GB mem, GPU)"
-    value = "g3.medium"
-  }
-  option {
-    name  = "g3.large (16 CPUs, 60GB mem, GPU)"
-    value = "g3.large"
-  }
-  option {
-    name  = "g3.xl (32 CPUs, 125GB mem, GPU)"
-    value = "g3.xl"
-  }
+variable "workspace_network" {
+  description = "name of network the vm will join"
+  type = string
 }
 
-data "coder_parameter" "instance_image" {
-  name         = "instance_image"
-  display_name = "Operating System"
-  description  = "Choose an operating system for the instance."
-  default      = "Featured-Minimal-Ubuntu24"
-  mutable      = false
-  option {
-    name  = "Featured Minimal Ubuntu 24"
-    value = "Featured-Minimal-Ubuntu24"
-  }
+variable "featured_image" {
+  description = "name of the most recent featured ubuntu image from jetstream2 team"
+  type = string
 }
 
-data "openstack_networking_network_v2" "dreamlab" {
-  name = "dreamlab_network"  # warning: this network is managed in the pulumi config
+variable "flavor_name" {
+  description = "instance size"
+  type = string
+  default = "m3.quad"
 }
+
+# data "coder_parameter" "instance_type" {
+#   name         = "instance_type"
+#   display_name = "Instance Type"
+#   description  = "What size instance for your workspace?"
+#   default      = "m3.small"
+#   option {
+#     name  = "m3.small (2 CPUs, 6GB mem)"
+#     value = "m3.small"
+#   }
+#   option {
+#     name  = "m3.quad (4 CPUs, 15GB mem)"
+#     value = "m3.quad"
+#   }
+#   option {
+#     name  = "m3.medium (8 CPUs, 30GB mem)"
+#     value = "m3.medium"
+#   }
+#   option {
+#     name  = "m3.large (16 CPUs, 60GB mem)"
+#     value = "m3.large"
+#   }
+#   option {
+#     name  = "m3.xl (32 CPUs, 125GB mem)"
+#     value = "m3.xl"
+#   }
+#   option {
+#     name  = "g3.medium (8 CPUs, 30GB mem, GPU)"
+#     value = "g3.medium"
+#   }
+#   option {
+#     name  = "g3.large (16 CPUs, 60GB mem, GPU)"
+#     value = "g3.large"
+#   }
+#   option {
+#     name  = "g3.xl (32 CPUs, 125GB mem, GPU)"
+#     value = "g3.xl"
+#   }
+# }
 
 locals {
   linux_user = "coder"
@@ -150,19 +150,17 @@ data "cloudinit_config" "user_data" {
   }
 }
 
-
-# creating Ubuntu22 instance
 resource "openstack_compute_instance_v2" "vm" {
   name ="coder-${data.coder_workspace_owner.me.name}-${data.coder_workspace.env.name}"
-  image_name  = data.coder_parameter.instance_image.value
-  flavor_name = data.coder_parameter.instance_type.value
+  image_name  = var.featured_image
+  flavor_name = var.flavor_name
   security_groups   = ["default"]
   metadata = {
     coder_agent_token = try(coder_agent.dev[0].token, "")
   }
   user_data = data.cloudinit_config.user_data.rendered
   network {
-    name = data.openstack_networking_network_v2.dreamlab.name
+    name = var.workspace_network
   }
   lifecycle {
     ignore_changes = [ user_data ]
