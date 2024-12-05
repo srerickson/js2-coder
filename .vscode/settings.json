@@ -1,5 +1,0 @@
-{
-    "yaml.schemas": {
-        "https://json.schemastore.org/yamllint.json": "file:///Users/serickson-local/src/dcn-jetstream2-demo/terraform/js2-coder/butane/traefik.yml"
-    }
-}

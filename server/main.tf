@@ -50,7 +50,7 @@ resource "openstack_networking_network_v2" "net" {
 
 #creating the virtual subnet
 resource "openstack_networking_subnet_v2" "subnet" {
-  name = "$mytest-subnet"
+  name = "mytest-subnet"
   network_id  = openstack_networking_network_v2.net.id
   cidr  = "192.168.120.0/24"
   ip_version  = 4
@@ -69,6 +69,7 @@ resource "openstack_networking_router_interface_v2" "router_interface" {
   subnet_id = openstack_networking_subnet_v2.subnet.id
 }
 
+# upload fedora coreos disk image for vm boot disk
 resource "openstack_images_image_v2" "fcos" {
   name             = "FedoraCoreOS"
   image_source_url = var.fcos_image_url
@@ -77,6 +78,8 @@ resource "openstack_images_image_v2" "fcos" {
   decompress       = true
 }
 
+# create new credentials, used by coder for launching workspace VMs and
+# DNS-based certificates
 resource "openstack_identity_application_credential_v3" "coder" {
   name = "coder"
 }
