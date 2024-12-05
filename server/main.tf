@@ -8,7 +8,10 @@ terraform {
   }
 }
 
-provider "openstack" {}
+provider "openstack" {
+  #if using cloud.yaml file for authentication:
+  #cloud = "OTH240004_IU"
+}
 
 variable "email" {
     type = string
