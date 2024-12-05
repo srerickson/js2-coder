@@ -1,11 +1,16 @@
+variable "email" {
+    type = string
+    default = "serickson@ucsb.edu"
+}
+
 variable "js2_project" {
     type = string
     default = "oth240004"
 }
 
-variable "data_container" {
+variable "ssh_public_key" {
     type = string
-    default = "dcn_data"
+    default = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDBH7kcq6B27oiM9KG/ZEVibCC8sK4wIkw732f+q1JXa serickson-local@drm04-l1az"
 }
 
 variable "fcos_image_url" {
@@ -15,5 +20,5 @@ variable "fcos_image_url" {
 
 variable "tags" {
     type = list(string)
-    default = ["opentofu"]
+    default = ["tofu", "dev"]
 }

@@ -3,11 +3,34 @@ resource "openstack_compute_instance_v2" "coder" {
   image_id        = var.fcos_image_id
   flavor_name     = var.vm_flavor_name
   key_pair        = resource.openstack_compute_keypair_v2.coder.name
+  user_data       = data.ct_config.coder.rendered
   security_groups = ["default", openstack_networking_secgroup_v2.coder.name]
   network {
     name = var.network_name
   }
   tags = var.tags
+}
+
+data "ct_config" "coder" {
+  content = file("${path.module}/butane/main.yaml")
+  strict = true
+  snippets = [
+    templatefile("${path.module}/butane/traefik.yaml", {
+      acme_email = var.acme_email
+      os_region_name = var.os_region_name
+      os_auth_url = var.os_auth_url
+      os_application_credential_id = var.os_application_credential_id
+      os_application_credential_secret = var.os_application_credential_secret
+    }),
+    templatefile("${path.module}/butane/coder.yaml", {
+      hostname = var.hostname
+      js2_project = var.js2_project
+      os_region_name = var.os_region_name
+      os_auth_url = var.os_auth_url
+      os_application_credential_id = var.os_application_credential_id
+      os_application_credential_secret = var.os_application_credential_secret
+    }),
+  ]
 }
 
 # associate vm with public ip

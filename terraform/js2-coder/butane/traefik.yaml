@@ -1,0 +1,67 @@
+variant: fcos
+version: 1.4.0
+systemd:
+  units:
+    - name: podman.socket
+      enabled: true
+storage:
+  files:
+    - path: /etc/traefik/traefik.yml
+      contents:
+        inline: |
+          global:
+            checkNewVersion: true
+            sendAnonymousUsage: true
+          log:
+            level: INFO
+          entryPoints:
+            web:
+              address: :80
+              http:
+                redirections:
+                  entryPoint:
+                    to: websecure
+                    scheme: https
+            websecure:
+              address: :443
+          certificatesResolvers:
+            dnsresolver:
+              acme:
+                email: ${acme_email}
+                storage: /etc/traefik/acme/acme.json
+                dnsChallenge:
+                  provider: designate
+          api:
+            dashboard: false
+          providers:
+            docker:
+              exposedByDefault: false
+
+    - path: /etc/containers/systemd/traefik.container
+      contents:
+        inline: |
+          [Unit]
+          Description=Traefik Reverse Proxy Container
+          After=network-online.target
+          Wants=network-online.target
+          [Container]
+          Image=docker.io/traefik:v3.2
+          Network=host
+
+          Environment=OS_AUTH_URL=${os_auth_url}
+          Environment=OS_REGION_NAME=${os_region_name}
+          Environment=OS_AUTH_TYPE=v3applicationcredential
+          Environment=OS_APPLICATION_CREDENTIAL_ID=${os_application_credential_id}
+          Environment=OS_APPLICATION_CREDENTIAL_SECRET=${os_application_credential_secret}
+
+          Volume=/var/run/podman/podman.sock:/var/run/docker.sock
+          Volume=/etc/traefik/traefik.yml:/etc/traefik/traefik.yml
+          Volume=traefik-acme:/etc/traefik/acme
+          SecurityLabelDisable=true
+          [Install]
+          WantedBy=multi-user.target
+    - path: /etc/containers/systemd/traefik-acme.volume
+      contents:
+        inline: |
+          [Volume]
+          VolumeName=traefik-acme

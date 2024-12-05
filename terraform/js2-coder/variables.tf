@@ -35,6 +35,36 @@ variable "fcos_image_id" {
     type = string
 }
 
+
+variable "acme_email" {
+    description = "email address used for ACME certificates"
+    type = string
+}
+
+variable "os_auth_url" {
+    description = "Jetstream2/OpenStack Authentication URL"
+    type = string
+    default = "https://js2.jetstream-cloud.org:5000/v3/"
+}
+
+variable "os_region_name" {
+    description = "Jetstream2/OpenStack Region"
+    type = string
+    default = "IU"
+}
+
+variable "os_application_credential_id" {
+    description = "Jetstream2/OpenStack Credential ID"
+    type = string
+    sensitive = true
+}
+
+variable "os_application_credential_secret" {
+    description = "Jetstream2/OpenStack Credential Secret"
+    type = string
+    sensitive = true
+}
+
 variable "tags" {
   description = "Tags to set on all resources."
   type        = list(string)

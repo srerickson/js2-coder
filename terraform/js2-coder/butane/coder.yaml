@@ -1,0 +1,53 @@
+variant: fcos
+version: 1.4.0
+storage:
+  files:
+    - path: /etc/containers/systemd/coder.container
+      contents:
+        inline: |
+          [Unit]
+          Description=Coder Container
+          After=network-online.target
+          Wants=network-online.target
+
+          [Container]
+          ContainerName=coder
+          Image=ghcr.io/coder/coder:latest
+          PublishPort=3000
+          Volume=coder-home:/home
+          EnvironmentFile=/etc/coder/coder.env
+          Label=traefik.enable="true"
+          Label=traefik.http.routers.coder-secure.entrypoints="websecure"
+          Label=traefik.http.routers.coder-secure.rule='HostRegexp(`^(.+\\.)?${hostname}\\.${js2_project}\\.projects\\.jetstream-cloud\\.org$`)'
+          Label=traefik.http.routers.coder-secure.tls="true"
+          Label=traefik.http.routers.coder-secure.tls.certresolver="dnsresolver"
+          Label=traefik.http.routers.coder-secure.tls.domains[0].main="${hostname}.${js2_project}.projects.jetstream-cloud.org"
+          Label=traefik.http.routers.coder-secure.tls.domains[1].main="*.${hostname}.${js2_project}.projects.jetstream-cloud.org"
+          [Install]
+          WantedBy=multi-user.target
+    
+    - path: /etc/coder/coder.env
+      contents:
+        inline: |
+          CODER_HTTP_ADDRESS=0.0.0.0:3000
+          CODER_ACCESS_URL=https://${hostname}.${js2_project}.projects.jetstream-cloud.org
+          CODER_WILDCARD_ACCESS_URL=*.${hostname}.${js2_project}.projects.jetstream-cloud.org
+          # CODER_OIDC_ISSUER_URL=https://accounts.google.com
+          # CODER_OIDC_EMAIL_DOMAIN=ucsb.edu
+          # CODER_OIDC_CLIENT_ID=
+          # CODER_OIDC_CLIENT_SECRET=
+          # CODER_OIDC_ALLOW_SIGNUPS=false
+          # Jetstream2/OpenStack Credentials
+          OS_AUTH_TYPE=v3applicationcredential
+          OS_AUTH_URL=${os_auth_url}
+          OS_IDENTITY_API_VERSION=3
+          OS_REGION_NAME=${os_region_name}
+          OS_INTERFACE=public
+          OS_APPLICATION_CREDENTIAL_ID=${os_application_credential_id}
+          OS_APPLICATION_CREDENTIAL_SECRET=${os_application_credential_secret}
+    
+    - path: /etc/containers/systemd/coder-home.volume
+      contents:
+        inline: |
+          [Volume]
+          VolumeName=coder-home
