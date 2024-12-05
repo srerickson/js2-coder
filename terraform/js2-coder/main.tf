@@ -1,3 +1,7 @@
+locals {
+  server_fqdn = "${var.hostname}.${var.js2_project}.projects.jetstream-cloud.org"
+}
+
 resource "openstack_compute_instance_v2" "coder" {
   name            = "${var.namespace}-${var.hostname}"
   image_id        = var.fcos_image_id
@@ -23,14 +27,27 @@ data "ct_config" "coder" {
       os_application_credential_secret = var.os_application_credential_secret
     }),
     templatefile("${path.module}/butane/coder.yaml", {
-      hostname = var.hostname
-      js2_project = var.js2_project
+      server_fqdn = local.server_fqdn
       os_region_name = var.os_region_name
       os_auth_url = var.os_auth_url
       os_application_credential_id = var.os_application_credential_id
       os_application_credential_secret = var.os_application_credential_secret
     }),
   ]
+}
+
+# persistent volume for podman volume
+resource "openstack_blockstorage_volume_v3" "coder" {
+  name = "${var.namespace}-${var.hostname}-data"
+  description = "coder server data"
+  size = 10
+}
+
+resource "openstack_compute_volume_attach_v2" "coder" {
+  instance_id = openstack_compute_instance_v2.coder.id
+  volume_id   = openstack_blockstorage_volume_v3.coder.id
+  device = "/dev/vdb"
+  tag= "coder-data" 
 }
 
 # associate vm with public ip

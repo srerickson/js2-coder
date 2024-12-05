@@ -18,11 +18,11 @@ storage:
           EnvironmentFile=/etc/coder/coder.env
           Label=traefik.enable="true"
           Label=traefik.http.routers.coder-secure.entrypoints="websecure"
-          Label=traefik.http.routers.coder-secure.rule='HostRegexp(`^(.+\\.)?${hostname}\\.${js2_project}\\.projects\\.jetstream-cloud\\.org$`)'
+          Label=traefik.http.routers.coder-secure.rule='HostRegexp(`^(.+\\.)?${replace(server_fqdn,".","\\\\.")}$`)'
           Label=traefik.http.routers.coder-secure.tls="true"
           Label=traefik.http.routers.coder-secure.tls.certresolver="dnsresolver"
-          Label=traefik.http.routers.coder-secure.tls.domains[0].main="${hostname}.${js2_project}.projects.jetstream-cloud.org"
-          Label=traefik.http.routers.coder-secure.tls.domains[1].main="*.${hostname}.${js2_project}.projects.jetstream-cloud.org"
+          Label=traefik.http.routers.coder-secure.tls.domains[0].main="${server_fqdn}"
+          Label=traefik.http.routers.coder-secure.tls.domains[1].main="*.${server_fqdn}"
           [Install]
           WantedBy=multi-user.target
     
@@ -30,8 +30,8 @@ storage:
       contents:
         inline: |
           CODER_HTTP_ADDRESS=0.0.0.0:3000
-          CODER_ACCESS_URL=https://${hostname}.${js2_project}.projects.jetstream-cloud.org
-          CODER_WILDCARD_ACCESS_URL=*.${hostname}.${js2_project}.projects.jetstream-cloud.org
+          CODER_ACCESS_URL=https://${server_fqdn}
+          CODER_WILDCARD_ACCESS_URL=*.${server_fqdn}
           # CODER_OIDC_ISSUER_URL=https://accounts.google.com
           # CODER_OIDC_EMAIL_DOMAIN=ucsb.edu
           # CODER_OIDC_CLIENT_ID=
