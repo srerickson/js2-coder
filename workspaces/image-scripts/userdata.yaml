@@ -1,0 +1,6 @@
+#cloud-config
+runcmd:
+  - docker pull rocker/tidyverse:latest
+  - [rm, -f, /home/ubuntu/.ssh/authorized_keys]
+  - [cloud-init, clean, -l, -s]
+  - [poweroff]
