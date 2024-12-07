@@ -17,8 +17,8 @@ variable "workspace_network" {
   type = string
 }
 
-variable "featured_image" {
-  description = "name of the most recent featured ubuntu image from jetstream2 team"
+variable "boot_image" {
+  description = "name of the disk image to boot workspace vms"
   type = string
 }
 
@@ -155,7 +155,7 @@ data "cloudinit_config" "user_data" {
 
 resource "openstack_compute_instance_v2" "vm" {
   name ="coder-${data.coder_workspace_owner.me.name}-${data.coder_workspace.env.name}"
-  image_name  = var.featured_image
+  image_name  = var.boot_image
   flavor_name = var.flavor_name
   security_groups   = ["default"]
   metadata = {

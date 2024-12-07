@@ -21,22 +21,16 @@ variable "coder_token" {
     sensitive = true
 }
 
-variable "workspace_network" {
-  description = "network that workspace vms should join"
-  type = string
-  default = "auto_allocated_network"
-}
 
-variable "featured_image" {
-  description = "name of default featured image"
-  type = string
-  default = "Featured-Ubuntu24"
+locals {
+  workspace_network = "auto_allocated_network"
+  featured_image    = "Featured-Ubuntu24"
 }
 
 resource "coderd_template" "default" {
   name         = "default"
   display_name = "Ubuntu VM"
-  description  = "Using the most recent featured Ubuntu image maintained by the JetStream2 team (${var.featured_image})"
+  description  = "Using the most recent featured Ubuntu image maintained by the JetStream2 team (${local.featured_image})"
   icon         = "/icon/ubuntu.svg"
   versions     = [
     {
@@ -44,11 +38,11 @@ resource "coderd_template" "default" {
       active    = true
       tf_vars = [
         {
-          name = "featured_image"
-          value = var.featured_image
+          name = "boot_image"
+          value = local.featured_image
         }, {
           name = "workspace_network"
-          value = var.workspace_network
+          value = local.workspace_network
         }
       ]
     }
