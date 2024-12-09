@@ -8,6 +8,14 @@ terraform {
   }
 }
 
+terraform {
+  backend "s3" {
+    bucket         = "dreamlab-tf"
+    key            = "dcn-js2/server.tfstate"
+    region         = "us-west-2"
+  }
+}
+
 provider "openstack" {
   #if using cloud.yaml file for authentication:
   #cloud = "OTH240004_IU"

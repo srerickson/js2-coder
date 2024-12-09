@@ -6,6 +6,14 @@ terraform {
   }
 }
 
+terraform {
+  backend "s3" {
+    bucket         = "dreamlab-tf"
+    key            = "dcn-js2/workspaces.tfstate"
+    region         = "us-west-2"
+  }
+}
+
 provider "coderd" {
   url   = var.coder_url
   token = var.coder_token

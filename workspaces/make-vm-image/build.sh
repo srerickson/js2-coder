@@ -8,6 +8,7 @@ BASE=images/Fedora-Cloud-Base-Generic-41-1.4.x86_64.qcow2
 BOOT=images/Fedora-Cloud-Customized.qcow2
 
 if [ ! -f "$BASE" ]; then
+  mkdir -p images
   curl -L "$IMAGE" -o $BASE 
 fi
 
@@ -38,7 +39,9 @@ serverPID=$!
 
 qemu-system-x86_64 -m 1024 -net nic -net user -nographic \
   -drive file=$BOOT,if=virtio \
-  -smbios type=1,serial=ds='nocloud;s=http://10.0.2.2:8000/' \
+  -smbios type=1,serial=ds='nocloud;s=http://
+  
+  :8000/' \
   -machine accel=kvm:tcg
 
 # stop metadata server
