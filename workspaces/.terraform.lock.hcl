@@ -4,6 +4,7 @@
 provider "registry.terraform.io/coder/coderd" {
   version = "0.0.8"
   hashes = [
+    "h1:/W71/GzsLcw0A+aOm8HGh1tpQeF5Df+ktgNrSeqj00E=",
     "h1:TvEhKOTmYVTbVmHRseO6rPcEFDKSgStJ9Nqq2zMXThI=",
     "zh:07a06039131ecefadd734c12c1c44400cc6afa5782862b603ea27aa181c3fab5",
     "zh:09c56a2386e252e7b14e5b31ea67884fff01dcbf2d733da583276e2718968921",

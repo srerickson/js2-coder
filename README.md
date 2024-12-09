@@ -15,19 +15,21 @@ provides terraform configurations for running a Coder server on [JetStream2](htt
 
 # notes
 
-Start docker in coder
-
- docker run --rm -d \
-     -p 127.0.0.1:8787:8787 \
-     -v $(pwd):/root \
-     -v $(echo $GIT_SSH_COMMAND | cut -d" " -f1):/tmp/coder/coder \
-     -e DISABLE_AUTH=true \
-     -e GIT_SSH_COMMAND='/tmp/coder/coder gitssh --' \
-     -e CODER_AGENT_URL \
-     -e CODER \
-     -e CODER_AGENT_AUTH \
-     -e CODER_AGENT_TOKEN \
-     -e CODER_AGENT_URL \
-     -e CODER_WORKSPACE_AGENT_NAME \
-     -e CODER_WORKSPACE_NAME \
-    rocker/tidyverse:latest
+create
+docker create --name rstudio \
+   -p 127.0.0.1:8787:8787 \
+   -v $(echo $GIT_SSH_COMMAND | cut -d" " -f1):/tmp/coder/coder \
+   -v /home/coder:/home/rstudio \
+   -e ROOT=true \
+   -e DISABLE_AUTH=true \
+   -e USERID=$(id -u) \
+   -e GROUPID=$(id -g) \
+   -e GIT_SSH_COMMAND='/tmp/coder/coder gitssh --' \
+   -e CODER \
+   -e CODER_AGENT_URL \
+   -e CODER_AGENT_AUTH \
+   -e CODER_AGENT_TOKEN \
+   -e CODER_AGENT_URL \
+   -e CODER_WORKSPACE_AGENT_NAME \
+   -e CODER_WORKSPACE_NAME \
+   rocker/tidyverse:latest

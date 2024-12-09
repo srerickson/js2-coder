@@ -82,13 +82,32 @@ resource "coder_agent" "dev" {
   os             = "linux"
   startup_script = <<-EOT
     set -e
-    # install and start code-server
-    curl -fsSL https://code-server.dev/install.sh | sh -s -- --method=standalone --prefix=/tmp/code-server --version 4.11.0
-    
-    # you can install extensions here
-    # /tmp/code-server/bin/code-server --install-extension REditorSupport.r --force
-    /tmp/code-server/bin/code-server --auth none --port 13337 >/tmp/code-server.log 2>&1 &
+    # start rstudio 
+    docker run --rm -d --name rstudio \
+      -p 127.0.0.1:8787:8787 \
+      -v $(echo $GIT_SSH_COMMAND | cut -d" " -f1):/tmp/coder/coder \
+      -v /home/coder:/home/rstudio \
+      -e ROOT=true \
+      -e DISABLE_AUTH=true \
+      -e USERID=$(id -u) \
+      -e GROUPID=$(id -g) \
+      -e GIT_SSH_COMMAND='/tmp/coder/coder gitssh --' \
+      -e CODER \
+      -e CODER_AGENT_URL \
+      -e CODER_AGENT_AUTH \
+      -e CODER_AGENT_TOKEN \
+      -e CODER_AGENT_URL \
+      -e CODER_WORKSPACE_AGENT_NAME \
+      -e CODER_WORKSPACE_NAME \
+      rocker/tidyverse:latest
   EOT
+
+  display_apps {
+    vscode          = false
+    vscode_insiders = false
+    web_terminal    = false
+    ssh_helper      = false
+  }
 
   metadata {
     key          = "cpu"
@@ -111,23 +130,40 @@ resource "coder_agent" "dev" {
     timeout      = 30  # df can take a while on large filesystems
     script       = "coder stat disk --path $HOME"
   }
+  
 }
 
-resource "coder_app" "code-server" {
+resource "coder_app" "rstudio" {
   count        = data.coder_workspace.env.start_count
   agent_id     = coder_agent.dev[0].id
-  slug         = "code-server"
-  display_name = "code-server"
-  url          = "http://localhost:13337/?folder=/home/coder"
-  icon         = "/icon/code.svg"
-  subdomain    = false
+  slug         = "rstudio"
+  display_name = "RStudio"
+  url          = "http://localhost:8787"
+  icon         = "/icon/rstudio.svg"
+  subdomain    = true
   share        = "owner"
-
   healthcheck {
-    url       = "http://localhost:13337/healthz"
-    interval  = 3
-    threshold = 10
+    url       = "http://localhost:8787/health-check"
+    interval  = 5
+    threshold = 20
   }
+}
+
+module "filebrowser" {
+  count    = data.coder_workspace.env.start_count
+  source   = "registry.coder.com/modules/filebrowser/coder"
+  version  = "1.0.23"
+  agent_id = coder_agent.dev[0].id
+  database_path = ".config/filebrowser.db"
+}
+
+module "vscode-web" {
+  count = data.coder_workspace.env.start_count
+  source = "registry.coder.com/modules/vscode-web/coder"
+  version = "1.0.22"
+  agent_id = coder_agent.dev[0].id
+  accept_license = true
+  folder = "/home/coder"
 }
 
 data "cloudinit_config" "user_data" {

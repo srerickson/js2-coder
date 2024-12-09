@@ -4,15 +4,8 @@
 apt-get update
 apt-get install -y jq
 
-# Install Docker
-if ! command -v docker &> /dev/null; then
-    echo "Docker not found, installing..."
-    curl -fsSL https://get.docker.com -o get-docker.sh && sh get-docker.sh 2>&1 >/dev/null
-    usermod -aG docker ${linux_user}
-    newgrp docker
-else
-    echo "Docker is already installed."
-fi
+usermod -aG docker ${linux_user}
+newgrp docker
 
 # Grabs token via the internal metadata server. This IP address is the same for all instances, no need to change it
 # https://docs.openstack.org/nova/rocky/user/metadata-service.html

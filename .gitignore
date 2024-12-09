@@ -1,6 +1,6 @@
 .venv
 keys/**
-**/openrc.sh
+**/**openrc.sh
 **/clouds.yaml
 **/.terraform
 **/terraform.tfstate
