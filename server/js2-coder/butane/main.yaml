@@ -1,0 +1,8 @@
+variant: fcos
+version: 1.4.0
+storage:
+  filesystems:
+    - device: /dev/vdb
+      path: /var/lib/containers/storage/volumes
+      format: xfs
+      with_mount_unit: true
