@@ -105,8 +105,8 @@ resource "coder_agent" "dev" {
   display_apps {
     vscode          = false
     vscode_insiders = false
-    web_terminal    = false
-    ssh_helper      = false
+    web_terminal    = true
+    ssh_helper      = true
   }
 
   metadata {
