@@ -16,36 +16,6 @@ terraform {
   }
 }
 
-provider "openstack" {
-  #if using cloud.yaml file for authentication:
-  #cloud = "OTH240004_IU"
-}
-
-variable "email" {
-    type = string
-    default = "serickson@ucsb.edu"
-}
-
-variable "js2_allocation" {
-    type = string
-    default = "oth240004"
-}
-
-variable "ssh_public_key" {
-    type = string
-    default = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDBH7kcq6B27oiM9KG/ZEVibCC8sK4wIkw732f+q1JXa serickson-local@drm04-l1az"
-}
-
-variable "fcos_image_url" {
-    type = string
-    default = "https://builds.coreos.fedoraproject.org/prod/streams/stable/builds/41.20241109.3.0/x86_64/fedora-coreos-41.20241109.3.0-openstack.x86_64.qcow2.xz"
-}
-
-variable "tags" {
-    type = list(string)
-    default = ["tofu", "dev"]
-}
-
 
 # getting public network id for routing
 data "openstack_networking_network_v2" "public" {
@@ -67,7 +37,7 @@ resource "openstack_networking_subnet_v2" "subnet" {
   ip_version  = 4
 }
 
-# router for accessing the public network
+# router for internet access from subnet
 resource "openstack_networking_router_v2" "router" {
   name = "mytest-router"
   admin_state_up  = true
@@ -95,6 +65,7 @@ resource "openstack_identity_application_credential_v3" "coder" {
   name = "coder"
 }
 
+// create the coder instance
 module "js2-coder1" {
   source = "./js2-coder"
   
@@ -111,6 +82,7 @@ module "js2-coder1" {
   tags = var.tags
 }
 
+// export the coder url
 output "coder_url" {
   value = module.js2-coder1.url
 }

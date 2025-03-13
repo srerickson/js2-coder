@@ -12,7 +12,7 @@ storage:
 
           [Container]
           ContainerName=coder
-          Image=ghcr.io/coder/coder:latest
+          Image=ghcr.io/coder/coder:v2.19.1
           PublishPort=3000
           Volume=coder-home:/home
           EnvironmentFile=/etc/coder/coder.env
