@@ -80,27 +80,6 @@ resource "coder_agent" "dev" {
   arch           = "amd64"
   auth           = "token"
   os             = "linux"
-  startup_script = <<-EOT
-    set -e
-    # start rstudio 
-    docker run --rm -d --name rstudio \
-      -p 127.0.0.1:8787:8787 \
-      -v $(echo $GIT_SSH_COMMAND | cut -d" " -f1):/tmp/coder/coder \
-      -v /home/coder:/home/rstudio \
-      -e ROOT=true \
-      -e DISABLE_AUTH=true \
-      -e USERID=$(id -u) \
-      -e GROUPID=$(id -g) \
-      -e GIT_SSH_COMMAND='/tmp/coder/coder gitssh --' \
-      -e CODER \
-      -e CODER_AGENT_URL \
-      -e CODER_AGENT_AUTH \
-      -e CODER_AGENT_TOKEN \
-      -e CODER_AGENT_URL \
-      -e CODER_WORKSPACE_AGENT_NAME \
-      -e CODER_WORKSPACE_NAME \
-      rocker/tidyverse:latest
-  EOT
 
   display_apps {
     vscode          = false
@@ -133,22 +112,6 @@ resource "coder_agent" "dev" {
   
 }
 
-resource "coder_app" "rstudio" {
-  count        = data.coder_workspace.env.start_count
-  agent_id     = coder_agent.dev[0].id
-  slug         = "rstudio"
-  display_name = "RStudio"
-  url          = "http://localhost:8787"
-  icon         = "/icon/rstudio.svg"
-  subdomain    = true
-  share        = "owner"
-  healthcheck {
-    url       = "http://localhost:8787/health-check"
-    interval  = 5
-    threshold = 20
-  }
-}
-
 module "filebrowser" {
   count    = data.coder_workspace.env.start_count
   source   = "registry.coder.com/modules/filebrowser/coder"
@@ -164,6 +127,17 @@ module "vscode-web" {
   agent_id = coder_agent.dev[0].id
   accept_license = true
   folder = "/home/coder"
+  extensions = ["ms-python.python","reditorsupport.r","mathworks.language-matlab"]
+}
+
+
+resource "coder_script" "install-R" {
+  count = data.coder_workspace.env.start_count
+  agent_id     = coder_agent.dev[0].id
+  display_name = "Install R"
+  icon         = "/icon/rstudio.svg"
+  script       = file("${path.module}/install-R.sh")
+  run_on_start = true
 }
 
 data "cloudinit_config" "user_data" {
