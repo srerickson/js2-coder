@@ -29,6 +29,15 @@ variable "coder_token" {
     sensitive = true
 }
 
+variable "s3_access_key_id" {
+  type = string
+  sensitive = true
+}
+
+variable "s3_secret_access_key" {
+  type = string
+  sensitive = true
+}
 
 locals {
   workspace_network = "auto_allocated_network"
@@ -51,6 +60,14 @@ resource "coderd_template" "default" {
         }, {
           name = "workspace_network"
           value = local.workspace_network
+        },
+        {
+          name = "s3_access_key_id",
+          value = var.s3_access_key_id
+        },
+        {
+          name = "s3_secret_access_key"
+          value = var.s3_secret_access_key
         }
       ]
     }

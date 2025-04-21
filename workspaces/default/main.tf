@@ -28,44 +28,16 @@ variable "flavor_name" {
   default = "m3.quad"
 }
 
-# data "coder_parameter" "instance_type" {
-#   name         = "instance_type"
-#   display_name = "Instance Type"
-#   description  = "What size instance for your workspace?"
-#   default      = "m3.small"
-#   option {
-#     name  = "m3.small (2 CPUs, 6GB mem)"
-#     value = "m3.small"
-#   }
-#   option {
-#     name  = "m3.quad (4 CPUs, 15GB mem)"
-#     value = "m3.quad"
-#   }
-#   option {
-#     name  = "m3.medium (8 CPUs, 30GB mem)"
-#     value = "m3.medium"
-#   }
-#   option {
-#     name  = "m3.large (16 CPUs, 60GB mem)"
-#     value = "m3.large"
-#   }
-#   option {
-#     name  = "m3.xl (32 CPUs, 125GB mem)"
-#     value = "m3.xl"
-#   }
-#   option {
-#     name  = "g3.medium (8 CPUs, 30GB mem, GPU)"
-#     value = "g3.medium"
-#   }
-#   option {
-#     name  = "g3.large (16 CPUs, 60GB mem, GPU)"
-#     value = "g3.large"
-#   }
-#   option {
-#     name  = "g3.xl (32 CPUs, 125GB mem, GPU)"
-#     value = "g3.xl"
-#   }
-# }
+
+variable "s3_access_key_id" {
+  type = string
+  sensitive = true
+}
+
+variable "s3_secret_access_key" {
+  type = string
+  sensitive = true
+}
 
 locals {
   linux_user = "coder"
@@ -109,7 +81,16 @@ resource "coder_agent" "dev" {
     timeout      = 30  # df can take a while on large filesystems
     script       = "coder stat disk --path $HOME"
   }
-  
+  env = {
+    AWS_ACCESS_KEY_ID=var.s3_access_key_id
+    AWS_SECRET_ACCESS_KEY=var.s3_secret_access_key
+    AWS_ENDPOINT="https://js2.jetstream-cloud.org:8001"
+    AWS_ENDPOINT_URL="https://js2.jetstream-cloud.org:8001"
+    AWS_REGION="us-east-1"
+    OCFL_ROOT="s3://dcn-data/nih-2025"
+    OCFL_S3_PATHSTYLE=true
+    OCFL_S3_MD5_CHECKSUMS=true
+  }
 }
 
 module "filebrowser" {
@@ -126,8 +107,8 @@ module "vscode-web" {
   version = "1.0.22"
   agent_id = coder_agent.dev[0].id
   accept_license = true
-  folder = "/home/coder"
-  extensions = ["ms-python.python","reditorsupport.r","mathworks.language-matlab"]
+  folder = "/home/coder/workshop"
+  extensions = ["ms-python.python","reditorsupport.r"]
 }
 
 
@@ -137,6 +118,18 @@ resource "coder_script" "install-R" {
   display_name = "Install R"
   icon         = "/icon/rstudio.svg"
   script       = file("${path.module}/install-R.sh")
+  run_on_start = true
+}
+
+resource "coder_script" "workshop_data" {
+  count = data.coder_workspace.env.start_count
+  agent_id     = coder_agent.dev[0].id
+  display_name = "Install workshop data"
+  icon         = "/icon/database.svg"
+  script       =  templatefile("${path.module}/workshop_data.sh", {
+    s3_access_key_id = var.s3_access_key_id
+    s3_secret_access_key = var.s3_secret_access_key
+  })
   run_on_start = true
 }
 

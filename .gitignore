@@ -5,3 +5,5 @@ keys/**
 **/.terraform
 **/terraform.tfstate
 **/terraform.tfstate.*
+notes.txt
+*.tfvars
