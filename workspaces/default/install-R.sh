@@ -23,4 +23,7 @@ if ! command -v R > /dev/null 2>&1; then
     sudo sh -c "Rscript -e 'install.packages(\"bspm\")'"
     sudo sh -c 'echo "suppressMessages(bspm::enable())" >> /usr/lib/R/etc/Rprofile.site'
     sudo sh -c 'echo "options(bspm.version.check=FALSE)" >> /usr/lib/R/etc/Rprofile.site'
+
+    # install language server used by vscode r extension
+    sudo sh -c "Rscript -e 'install.packages(\"languageserver\", repos=\"https://cloud.r-project.org/\")'"
 fi
