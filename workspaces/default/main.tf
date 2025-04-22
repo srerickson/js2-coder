@@ -108,7 +108,7 @@ module "vscode-web" {
   agent_id = coder_agent.dev[0].id
   accept_license = true
   folder = "/home/coder/workshop"
-  extensions = ["ms-python.python","reditorsupport.r"]
+  extensions = ["ms-python.python"]
 }
 
 
