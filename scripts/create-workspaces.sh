@@ -1,5 +1,6 @@
 file=$1
 
+CODER_URL=coder.oth240004.projects.jetstream-cloud.org
 
 create_user() {
     user=$1
